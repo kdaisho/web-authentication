@@ -4,6 +4,16 @@ import Router from "./Router.js"
 const Auth = {
     isLoggedIn: false,
     account: null,
+    postLogin(res, user) {
+        if (res.ok) {
+            Auth.isLoggedIn = true
+            Auth.account = user
+            Auth.updateStatus()
+            Router.go("/account")
+        } else {
+            alert(res.message)
+        }
+    },
     async register(event) {
         event.preventDefault()
         const formData = new FormData(event.target)
@@ -13,7 +23,7 @@ const Auth = {
             password: formData.get("password"),
         }
         const response = await API.register(user)
-        console.log("response for register", response)
+        Auth.postLogin(response, { name: user.name, email: user.email })
     },
     async login(event) {
         event.preventDefault()
@@ -23,7 +33,10 @@ const Auth = {
             password: formData.get("password"),
         }
         const response = await API.login(credentials)
-        console.log("response for login", response)
+        Auth.postLogin(response, {
+            name: response.name,
+            email: credentials.email,
+        })
     },
     updateStatus() {
         if (Auth.isLoggedIn && Auth.account) {

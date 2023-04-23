@@ -5,7 +5,7 @@ import * as url from "url"
 import * as jwtJsDecode from "jwt-js-decode"
 import base64url from "base64url"
 import SimpleWebAuthnServer from "@simplewebauthn/server"
-import { findUser, isInvalidEmail, hash } from "./utils.js"
+import { findUser, isInvalidEmail, hash, compare } from "./utils.js"
 
 const app = express()
 app.use(express.json())
