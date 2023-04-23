@@ -25,21 +25,6 @@ app.use(
     })
 )
 
-app.post("auth/login", (req, res) => {
-    const { name, email, password } = req.body
-    const foundUser = findUser(req.body.email)
-
-    if (foundUser) {
-        if (compare(password, foundUser.password)) {
-            res.ok({ ok: true, name, email })
-        } else {
-            res.send({ ok: false, message: "Credential are wrong." })
-        }
-    } else {
-        res.send({ ok: false, message: "Credential are wrong." })
-    }
-})
-
 app.post("/auth/register", (req, res) => {
     const { name, email, password } = req.body
     const foundUser = findUser(email)
@@ -60,6 +45,21 @@ app.post("/auth/register", (req, res) => {
             db.data.users.push(user)
             db.write()
             res.send({ ok: true })
+    }
+})
+
+app.post("/auth/login", (req, res) => {
+    const { email, password } = req.body
+    const foundUser = findUser(email)
+
+    if (foundUser) {
+        if (compare(password, foundUser.password)) {
+            res.send({ ok: true, name: foundUser.name, email: foundUser.email })
+        } else {
+            res.send({ ok: false, message: "Credential are wrong." })
+        }
+    } else {
+        res.send({ ok: false, message: "Credential are wrong." })
     }
 })
 
