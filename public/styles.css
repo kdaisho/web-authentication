@@ -147,3 +147,7 @@ form input:focus {
     border-color: var(--color3);
     background-color: white;
 }
+
+button:hover {
+    cursor: pointer;
+}

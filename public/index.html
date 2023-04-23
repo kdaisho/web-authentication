@@ -72,25 +72,25 @@
 
             <section class="page" id="register">
                 <h2>Register</h2>
-                <form id="formRegister">
+                <form id="form_register">
                     <fieldset>
+                        <label for="register_name">Your name</label>
                         <!-- set autocomplete to "name" to help password managers do the job -->
                         <input
                             id="register_name"
-                            placeholder="You Name"
                             autocomplete="name"
                             required
                         />
+                        <label for="register_email">Your email</label>
                         <!-- set autocomplete to "username" to help password managers do the job -->
                         <input
                             id="register_email"
                             type="email"
-                            placeholder="Your email"
                             autocomplete="username"
                             required
                         />
+                        <label for="register_password">Your password</label>
                         <!-- set autocomplete to "new-password" to help password managers do the job -->
-                        <label>Your Password</label>
                         <input
                             id="register_password"
                             type="password"
@@ -108,9 +108,9 @@
 
                 <form id="formLogin">
                     <fieldset>
+                        <label for="register_name">Your email</label>
                         <!-- set autocomplete to "username" to help password managers do the job -->
                         <input
-                            placeholder="email"
                             id="login_email"
                             autocomplete="username"
                             required

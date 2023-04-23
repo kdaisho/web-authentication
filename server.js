@@ -32,7 +32,7 @@ app.use(
 
 // ADD HERE THE REST OF THE ENDPOINTS
 
-app.get("*", (req, res) => {
+app.get("*", (_, res) => {
     res.sendFile(__dirname + "public/index.html")
 })
 
