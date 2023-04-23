@@ -1,22 +1,16 @@
 import express from "express"
-import { Low } from "lowdb"
-import { JSONFile } from "lowdb/node"
+import db from "./db.js"
 import * as url from "url"
 
 import * as jwtJsDecode from "jwt-js-decode"
 import base64url from "base64url"
 import SimpleWebAuthnServer from "@simplewebauthn/server"
-import { findUser, isValidEmail, hash } from "./utils.js"
-
-const __dirname = url.fileURLToPath(new URL(".", import.meta.url))
+import { findUser, isInvalidEmail, hash } from "./utils.js"
 
 const app = express()
 app.use(express.json())
 
-const adapter = new JSONFile(__dirname + "/motherfucker.json")
-const db = new Low(adapter)
-await db.read()
-db.data ||= { users: [] }
+const __dirname = url.fileURLToPath(new URL(".", import.meta.url))
 
 const rpID = "localhost"
 const protocol = "http"
@@ -47,27 +41,25 @@ app.post("auth/login", (req, res) => {
 })
 
 app.post("/auth/register", (req, res) => {
-    console.log(req.body)
     const { name, email, password } = req.body
-
-    if (!isValidEmail(email)) {
-        res.send({ ok: false, message: "Email is invalid." })
-        console.log("runs here?")
-    }
-
     const foundUser = findUser(email)
 
-    if (foundUser) {
-        res.send({ ok: false, message: "User already exists." })
-    } else {
-        const user = {
-            name,
-            email,
-            password: hash(password),
-        }
-        db.data.users.push(user)
-        db.write()
-        res.send({ ok: true })
+    switch (true) {
+        case isInvalidEmail(email):
+            res.send({ ok: false, message: "Email is invalid." })
+            break
+        case foundUser:
+            res.send({ ok: false, message: "User already exists." })
+            break
+        default:
+            const user = {
+                name,
+                email,
+                password: hash(password),
+            }
+            db.data.users.push(user)
+            db.write()
+            res.send({ ok: true })
     }
 })
 

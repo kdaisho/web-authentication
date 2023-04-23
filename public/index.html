@@ -70,30 +70,30 @@
                 </section>
             </section>
 
-            <section class="page" id="register">
+            <section class="page" id="register" onsubmit="Auth.register(event)">
                 <h2>Register</h2>
                 <form id="form_register">
                     <fieldset>
                         <label for="register_name">Your name</label>
-                        <!-- set autocomplete to "name" to help password managers do the job -->
                         <input
                             id="register_name"
+                            name="name"
                             autocomplete="name"
                             required
                         />
                         <label for="register_email">Your email</label>
-                        <!-- set autocomplete to "username" to help password managers do the job -->
                         <input
                             id="register_email"
                             type="email"
+                            name="email"
                             autocomplete="username"
                             required
                         />
                         <label for="register_password">Your password</label>
-                        <!-- set autocomplete to "new-password" to help password managers do the job -->
                         <input
                             id="register_password"
                             type="password"
+                            name="password"
                             autocomplete="new-password"
                             required
                         />
@@ -106,20 +106,21 @@
             <section class="page" id="login">
                 <h2>Log In</h2>
 
-                <form id="formLogin">
+                <form id="formLogin" onsubmit="Auth.login(event)">
                     <fieldset>
                         <label for="register_name">Your email</label>
-                        <!-- set autocomplete to "username" to help password managers do the job -->
                         <input
                             id="login_email"
+                            type="email"
+                            name="email"
                             autocomplete="username"
                             required
                         />
                         <label for="login_password">Password</label>
-                        <!-- set autocomplete to "current-password" to help password managers do the job -->
                         <input
                             id="login_password"
                             type="password"
+                            name="password"
                             autocomplete="current-password"
                         />
                     </fieldset>

@@ -1,4 +1,5 @@
 import bcrypt from "bcryptjs"
+import db from "./db.js"
 
 export function findUser(email) {
     const user = db.data.users.find(user => user.email === email)
@@ -6,15 +7,17 @@ export function findUser(email) {
     return user
 }
 
-export function isValidEmail(email) {
-    return email.match(
+export function isInvalidEmail(email) {
+    return !email.match(
         /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
     )
 }
 
 export function hash(str) {
     const salt = bcrypt.genSaltSync(10)
-    console.log("salt", salt)
-
     return bcrypt.hashSync(str, salt)
+}
+
+export function compare(str, hashedPassword) {
+    return bcrypt.compareSync(str, hashedPassword)
 }
