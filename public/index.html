@@ -74,22 +74,27 @@
                 <h2>Register</h2>
                 <form id="formRegister">
                     <fieldset>
+                        <!-- set autocomplete to "name" to help password managers do the job -->
                         <input
-                            placeholder="You Name"
                             id="register_name"
+                            placeholder="You Name"
+                            autocomplete="name"
                             required
                         />
+                        <!-- set autocomplete to "username" to help password managers do the job -->
                         <input
-                            placeholder="Your email"
                             id="register_email"
-                            required
                             type="email"
+                            placeholder="Your email"
+                            autocomplete="username"
+                            required
                         />
-
+                        <!-- set autocomplete to "new-password" to help password managers do the job -->
                         <label>Your Password</label>
                         <input
-                            type="password"
                             id="register_password"
+                            type="password"
+                            autocomplete="new-password"
                             required
                         />
                     </fieldset>
@@ -103,9 +108,20 @@
 
                 <form id="formLogin">
                     <fieldset>
-                        <input placeholder="email" id="login_email" required />
+                        <!-- set autocomplete to "username" to help password managers do the job -->
+                        <input
+                            placeholder="email"
+                            id="login_email"
+                            autocomplete="username"
+                            required
+                        />
                         <label for="login_password">Password</label>
-                        <input type="password" id="login_password" />
+                        <!-- set autocomplete to "current-password" to help password managers do the job -->
+                        <input
+                            id="login_password"
+                            type="password"
+                            autocomplete="current-password"
+                        />
                     </fieldset>
                     <button>Continue</button>
 
