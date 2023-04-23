@@ -18,7 +18,10 @@ const Router = {
     },
     go: (route, addToHistory = true) => {
         if (addToHistory) {
-            history.pushState({ route }, "", route)
+            // Wait to avoid password manager (1pw) throwing an error
+            setTimeout(() => {
+                history.pushState({ route }, "", route)
+            }, 100)
         }
 
         document
