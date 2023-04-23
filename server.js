@@ -1,21 +1,16 @@
 import express from "express"
-import { Low } from "lowdb"
-import { JSONFile } from "lowdb/node"
+import db from "./db.js"
 import * as url from "url"
-import bcrypt from "bcryptjs"
+
 import * as jwtJsDecode from "jwt-js-decode"
 import base64url from "base64url"
 import SimpleWebAuthnServer from "@simplewebauthn/server"
-
-const __dirname = url.fileURLToPath(new URL(".", import.meta.url))
+import { findUser, isInvalidEmail, hash } from "./utils.js"
 
 const app = express()
 app.use(express.json())
 
-const adapter = new JSONFile(__dirname + "/auth.json")
-const db = new Low(adapter)
-await db.read()
-db.data ||= { users: [] }
+const __dirname = url.fileURLToPath(new URL(".", import.meta.url))
 
 const rpID = "localhost"
 const protocol = "http"
@@ -30,9 +25,46 @@ app.use(
     })
 )
 
-// ADD HERE THE REST OF THE ENDPOINTS
+app.post("auth/login", (req, res) => {
+    const { name, email, password } = req.body
+    const foundUser = findUser(req.body.email)
 
-app.get("*", (req, res) => {
+    if (foundUser) {
+        if (compare(password, foundUser.password)) {
+            res.ok({ ok: true, name, email })
+        } else {
+            res.send({ ok: false, message: "Credential are wrong." })
+        }
+    } else {
+        res.send({ ok: false, message: "Credential are wrong." })
+    }
+})
+
+app.post("/auth/register", (req, res) => {
+    const { name, email, password } = req.body
+    const foundUser = findUser(email)
+
+    switch (true) {
+        case isInvalidEmail(email):
+            res.send({ ok: false, message: "Email is invalid." })
+            break
+        case foundUser:
+            res.send({ ok: false, message: "User already exists." })
+            break
+        default:
+            const user = {
+                name,
+                email,
+                password: hash(password),
+            }
+            db.data.users.push(user)
+            db.write()
+            res.send({ ok: true })
+    }
+})
+
+app.get("*", (_, res) => {
+    // this actually doesn't do anything as long as the line above `app.use(express.static("public"))` is there
     res.sendFile(__dirname + "public/index.html")
 })
 

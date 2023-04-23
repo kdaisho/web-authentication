@@ -70,26 +70,31 @@
                 </section>
             </section>
 
-            <section class="page" id="register">
+            <section class="page" id="register" onsubmit="Auth.register(event)">
                 <h2>Register</h2>
-                <form id="formRegister">
+                <form id="form_register">
                     <fieldset>
+                        <label for="register_name">Your name</label>
                         <input
-                            placeholder="You Name"
                             id="register_name"
+                            name="name"
+                            autocomplete="name"
                             required
                         />
+                        <label for="register_email">Your email</label>
                         <input
-                            placeholder="Your email"
                             id="register_email"
-                            required
                             type="email"
+                            name="email"
+                            autocomplete="username"
+                            required
                         />
-
-                        <label>Your Password</label>
+                        <label for="register_password">Your password</label>
                         <input
-                            type="password"
                             id="register_password"
+                            type="password"
+                            name="password"
+                            autocomplete="new-password"
                             required
                         />
                     </fieldset>
@@ -101,11 +106,23 @@
             <section class="page" id="login">
                 <h2>Log In</h2>
 
-                <form id="formLogin">
+                <form id="formLogin" onsubmit="Auth.login(event)">
                     <fieldset>
-                        <input placeholder="email" id="login_email" required />
+                        <label for="register_name">Your email</label>
+                        <input
+                            id="login_email"
+                            type="email"
+                            name="email"
+                            autocomplete="username"
+                            required
+                        />
                         <label for="login_password">Password</label>
-                        <input type="password" id="login_password" />
+                        <input
+                            id="login_password"
+                            type="password"
+                            name="password"
+                            autocomplete="current-password"
+                        />
                     </fieldset>
                     <button>Continue</button>
 
