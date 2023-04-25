@@ -38,6 +38,12 @@ const Auth = {
             email: credentials.email,
         })
     },
+    logout() {
+        Auth.isLoggedIn = false
+        Auth.account = null
+        Auth.updateStatus()
+        Router.go("/")
+    },
     updateStatus() {
         if (Auth.isLoggedIn && Auth.account) {
             document
