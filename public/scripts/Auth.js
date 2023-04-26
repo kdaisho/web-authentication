@@ -7,11 +7,29 @@ const Auth = {
     postLogin(res, user) {
         if (res.ok) {
             Auth.isLoggedIn = true
-            Auth.account = user
+            Auth.account = {
+                name: user.name,
+                email: user.email,
+            }
             Auth.updateStatus()
             Router.go("/account")
         } else {
             alert(res.message)
+        }
+
+        // credential management api storage - works only on chromium-based browsers
+        if (window.PasswordCredential && user.password) {
+            const credentials = new PasswordCredential({
+                id: user.email,
+                name: user.name,
+                password: user.password,
+            })
+
+            try {
+                navigator.credentials.store(credentials)
+            } catch (err) {
+                console.error("Failed to save", err)
+            }
         }
     },
     async register(event) {
@@ -23,7 +41,7 @@ const Auth = {
             password: formData.get("password"),
         }
         const response = await API.register(user)
-        Auth.postLogin(response, { name: user.name, email: user.email })
+        Auth.postLogin(response, user)
     },
     async login(event) {
         event.preventDefault()
@@ -33,16 +51,26 @@ const Auth = {
             password: formData.get("password"),
         }
         const response = await API.login(credentials)
-        Auth.postLogin(response, {
-            name: response.name,
-            email: credentials.email,
-        })
+        Auth.postLogin(response, { ...credentials, name: response.name })
     },
     logout() {
         Auth.isLoggedIn = false
         Auth.account = null
         Auth.updateStatus()
         Router.go("/")
+
+        if (window.PasswordCredential) {
+            navigator.credentials.preventSilentAccess()
+        }
+    },
+    async autoLogin() {
+        if (window.PasswordCredential) {
+            const credentials = await navigator.credentials.get({
+                password: true,
+            })
+            // this won't work without https as of April 2023, so this always null
+            console.log(credentials)
+        }
     },
     updateStatus() {
         if (Auth.isLoggedIn && Auth.account) {
@@ -70,6 +98,7 @@ const Auth = {
     init: () => {},
 }
 Auth.updateStatus()
+Auth.autoLogin()
 
 export default Auth
 
