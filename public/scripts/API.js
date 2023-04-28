@@ -12,11 +12,17 @@ const makePostRequest = async (url, data) => {
 }
 
 const API = {
-    register: async user => {
+    async register(user) {
         return await makePostRequest(endpoint + "register", user)
     },
-    login: async credentials => {
+    async login(credentials) {
         return await makePostRequest(endpoint + "login", credentials)
+    },
+    async credentials() {
+        return await makePostRequest(endpoint + "login", credentials)
+    },
+    async checkAuthOptions(user) {
+        return await makePostRequest(endpoint + "auth-options", user)
     },
 }
 

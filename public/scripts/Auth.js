@@ -43,15 +43,37 @@ const Auth = {
         const response = await API.register(user)
         Auth.postLogin(response, user)
     },
+    async checkAuthOptions(email) {
+        const response = await API.checkAuthOptions({ email })
+        Auth.loginStep = 2
+        console.log("==>", { response })
+
+        if (response.password) {
+            document.getElementById("login_section_password").hidden = false
+        }
+        if (response.webauthn) {
+            console.log("==>", "here")
+            document.getElementById("login_section_webauthn").hidden = false
+        }
+        if (response.unregistered) {
+            Router.go("/register")
+        }
+    },
     async login(event) {
         event.preventDefault()
         const formData = new FormData(event.target)
-        const credentials = {
-            email: formData.get("email"),
-            password: formData.get("password"),
+        const email = formData.get("email")
+        if (Auth.loginStep === 1) {
+            Auth.checkAuthOptions(email)
+        } else {
+            // step 2
+            const credentials = {
+                email,
+                password: formData.get("password"),
+            }
+            const response = await API.login(credentials)
+            Auth.postLogin(response, { ...credentials, name: response.name })
         }
-        const response = await API.login(credentials)
-        Auth.postLogin(response, { ...credentials, name: response.name })
     },
     logout() {
         Auth.isLoggedIn = false
@@ -95,7 +117,11 @@ const Auth = {
                 .forEach(elem => (elem.style.display = "none"))
         }
     },
-    init: () => {},
+    loginStep: 1,
+    init: () => {
+        document.getElementById("login_section_password").hidden = true
+        document.getElementById("login_section_webauthn").hidden = true
+    },
 }
 Auth.updateStatus()
 Auth.autoLogin()
