@@ -46,17 +46,19 @@ const Auth = {
     async checkAuthOptions(email) {
         const response = await API.checkAuthOptions({ email })
         Auth.loginStep = 2
-        console.log("==>", { response })
 
-        if (response.password) {
-            document.getElementById("login_section_password").hidden = false
-        }
-        if (response.webauthn) {
-            console.log("==>", "here")
-            document.getElementById("login_section_webauthn").hidden = false
-        }
-        if (response.unregistered) {
-            Router.go("/register")
+        switch (true) {
+            case response.password:
+                document.getElementById("login_section_password").hidden = false
+                break
+            case response.webauthn:
+                document.getElementById("login_section_webauthn").hidden = false
+                break
+            case response.unregistered:
+                Router.go("/register")
+                break
+            default:
+                break
         }
     },
     async login(event) {

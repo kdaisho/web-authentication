@@ -49,16 +49,15 @@ app.post("/auth/register", (req, res) => {
 })
 
 app.post("/auth/auth-options", (req, res) => {
-    console.log("==>", req.body)
+    if (isInvalidEmail(req.body.email)) return
     const foundUser = findUser(req.body.email)
-    console.log("==>", foundUser)
+
     if (foundUser) {
         res.send({
             password: true,
             webauthn: foundUser.webauthn || false,
         })
     } else {
-        // unregistered user, needs to tell client to redirect to /register
         res.send({ unregistered: true })
     }
 })
