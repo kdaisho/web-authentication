@@ -23,6 +23,7 @@
         <link rel="icon" href="images/icons/icon.png" />
 
         <script src="scripts/app.js" type="module"></script>
+        <script src="https://unpkg.com/@simplewebauthn/browser/dist/bundle/index.umd.min.js"></script>
     </head>
 
     <body>
@@ -116,13 +117,24 @@
                             autocomplete="username"
                             required
                         />
-                        <label for="login_password">Password</label>
-                        <input
-                            id="login_password"
-                            type="password"
-                            name="password"
-                            autocomplete="current-password"
-                        />
+                        <section hidden id="login_section_password">
+                            <label for="login_password">Password</label>
+                            <input
+                                id="login_password"
+                                type="password"
+                                name="password"
+                                autocomplete="current-password"
+                            />
+                        </section>
+
+                        <section hidden id="login_section_webauthn">
+                            <a
+                                href="#"
+                                class="navlink"
+                                onclick="Auth.webAuthnLogin(); event.preventDefault()"
+                                >Log in with WebAuthn / Passkey</a
+                            >
+                        </section>
                     </fieldset>
                     <button>Continue</button>
 
@@ -143,6 +155,9 @@
                     <dd class="account_username"></dd>
                 </dl>
 
+                <button onclick="Auth.addWebAuthn()">
+                    Add authenticator / passkey
+                </button>
                 <button onclick="Auth.logout()">Log out</button>
             </section>
         </main>

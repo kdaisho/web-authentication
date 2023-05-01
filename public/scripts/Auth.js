@@ -43,15 +43,69 @@ const Auth = {
         const response = await API.register(user)
         Auth.postLogin(response, user)
     },
+    async checkAuthOptions(email) {
+        const response = await API.checkAuthOptions({ email })
+        Auth.loginStep = 2
+
+        if (response.password) {
+            document.getElementById("login_section_password").hidden = false
+        }
+        if (response.webauthn) {
+            document.getElementById("login_section_webauthn").hidden = false
+        }
+        if (response.unregistered) {
+            Router.go("/register")
+        }
+    },
+    async addWebAuthn() {
+        const options = await API.webAuthn.registrationOptions()
+        options.authenticatorSelection.residentKey = "required"
+        options.authenticatorSelection.requireResidentKey = true
+        options.extensions = {
+            credProps: true,
+        }
+        const authRes = await SimpleWebAuthnBrowser.startRegistration(options)
+        const verificationRes = await API.webAuthn.registrationVerification(
+            authRes
+        )
+        if (verificationRes.ok) {
+            alert("You can now login with WebAuthn")
+        } else {
+            alert(verificationRes.message)
+        }
+    },
     async login(event) {
         event.preventDefault()
         const formData = new FormData(event.target)
-        const credentials = {
-            email: formData.get("email"),
-            password: formData.get("password"),
+        const email = formData.get("email")
+        if (Auth.loginStep === 1) {
+            Auth.checkAuthOptions(email)
+        } else {
+            // step 2
+            const credentials = {
+                email,
+                password: formData.get("password"),
+            }
+            const response = await API.login(credentials)
+            Auth.postLogin(response, { ...credentials, name: response.name })
         }
-        const response = await API.login(credentials)
-        Auth.postLogin(response, { ...credentials, name: response.name })
+    },
+    async webAuthnLogin() {
+        const email = document.getElementById("login_email").value
+        const options = await API.webAuthn.loginOptions(email)
+        const loginRes = await SimpleWebAuthnBrowser.startAuthentication(
+            options
+        )
+        const verificationRes = await API.webAuthn.loginVerification(
+            email,
+            loginRes
+        )
+
+        if (verificationRes.ok) {
+            Auth.postLogin(verificationRes, verificationRes.user)
+        } else {
+            alert(verificationRes.message)
+        }
     },
     logout() {
         Auth.isLoggedIn = false
@@ -69,7 +123,6 @@ const Auth = {
                 password: true,
             })
             // this won't work without https as of April 2023, so this always null
-            console.log(credentials)
         }
     },
     updateStatus() {
@@ -95,7 +148,11 @@ const Auth = {
                 .forEach(elem => (elem.style.display = "none"))
         }
     },
-    init: () => {},
+    loginStep: 1,
+    init: () => {
+        document.getElementById("login_section_password").hidden = true
+        document.getElementById("login_section_webauthn").hidden = true
+    },
 }
 Auth.updateStatus()
 Auth.autoLogin()
