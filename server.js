@@ -1,5 +1,6 @@
 import express from "express"
 import db from "./db.js"
+import base64url from "base64url"
 import * as url from "url"
 import SimpleWebAuthnServer from "@simplewebauthn/server"
 import { findUser, isInvalidEmail, hash, compare } from "./utils.js"
@@ -75,7 +76,7 @@ app.post("/auth/login", (req, res) => {
     }
 })
 
-// WEBAUTHN ENDPOINTS
+// WEBAUTHN ENDPOINTS: 4 endpoints -  2 for registration, 2 for login
 app.post("/auth/webauth-registration-options", (req, res) => {
     const user = findUser(req.body.email)
 
@@ -177,19 +178,15 @@ app.post("/auth/webauth-registration-verification", async (req, res) => {
 
 app.post("/auth/webauth-login-options", (req, res) => {
     const user = findUser(req.body.email)
-    // if (user === null) {
-    //     res.sendStatus(404);
-    //     return;
-    // }
     const options = {
         timeout: 60000,
         allowCredentials: [],
         devices:
             user && user.devices
-                ? user.devices.map(dev => ({
-                      id: dev.credentialID,
+                ? user.devices.map(device => ({
+                      id: device.credentialID,
                       type: "public-key",
-                      transports: dev.transports,
+                      transports: device.transports,
                   }))
                 : [],
         userVerification: "required",
@@ -204,6 +201,7 @@ app.post("/auth/webauth-login-options", (req, res) => {
 app.post("/auth/webauth-login-verification", async (req, res) => {
     const data = req.body.data
     const user = findUser(req.body.email)
+
     if (user === null) {
         res.sendStatus(400).send({ ok: false })
         return
@@ -214,10 +212,10 @@ app.post("/auth/webauth-login-verification", async (req, res) => {
     let dbAuthenticator
     const bodyCredIDBuffer = base64url.toBuffer(data.rawId)
 
-    for (const dev of user.devices) {
-        const currentCredential = Buffer(dev.credentialID.data)
+    for (const device of user.devices) {
+        const currentCredential = Buffer(device.credentialID.data)
         if (bodyCredIDBuffer.equals(currentCredential)) {
-            dbAuthenticator = dev
+            dbAuthenticator = device
             break
         }
     }
@@ -238,7 +236,7 @@ app.post("/auth/webauth-login-verification", async (req, res) => {
             expectedRPID: rpID,
             authenticator: {
                 ...dbAuthenticator,
-                credentialPublicKey: new Buffer(
+                credentialPublicKey: new Buffer.from(
                     dbAuthenticator.credentialPublicKey.data
                 ), // Re-convert to Buffer from JSON
             },

@@ -24,6 +24,37 @@ const API = {
     async checkAuthOptions(user) {
         return await makePostRequest(endpoint + "auth-options", user)
     },
+    webAuthn: {
+        async loginOptions(email) {
+            return await makePostRequest(endpoint + "webauth-login-options", {
+                email,
+            })
+        },
+        async loginVerification(email, data) {
+            return await makePostRequest(
+                endpoint + "webauth-login-verification",
+                {
+                    email,
+                    data,
+                }
+            )
+        },
+        async registrationOptions() {
+            return await makePostRequest(
+                endpoint + "webauth-registration-options",
+                Auth.account
+            )
+        },
+        async registrationVerification(data) {
+            return await makePostRequest(
+                endpoint + "webauth-registration-verification",
+                {
+                    user: Auth.account,
+                    data,
+                }
+            )
+        },
+    },
 }
 
 export default API

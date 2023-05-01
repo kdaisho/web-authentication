@@ -47,18 +47,31 @@ const Auth = {
         const response = await API.checkAuthOptions({ email })
         Auth.loginStep = 2
 
-        switch (true) {
-            case response.password:
-                document.getElementById("login_section_password").hidden = false
-                break
-            case response.webauthn:
-                document.getElementById("login_section_webauthn").hidden = false
-                break
-            case response.unregistered:
-                Router.go("/register")
-                break
-            default:
-                break
+        if (response.password) {
+            document.getElementById("login_section_password").hidden = false
+        }
+        if (response.webauthn) {
+            document.getElementById("login_section_webauthn").hidden = false
+        }
+        if (response.unregistered) {
+            Router.go("/register")
+        }
+    },
+    async addWebAuthn() {
+        const options = await API.webAuthn.registrationOptions()
+        options.authenticatorSelection.residentKey = "required"
+        options.authenticatorSelection.requireResidentKey = true
+        options.extensions = {
+            credProps: true,
+        }
+        const authRes = await SimpleWebAuthnBrowser.startRegistration(options)
+        const verificationRes = await API.webAuthn.registrationVerification(
+            authRes
+        )
+        if (verificationRes.ok) {
+            alert("You can now login with WebAuthn")
+        } else {
+            alert(verificationRes.message)
         }
     },
     async login(event) {
@@ -77,6 +90,23 @@ const Auth = {
             Auth.postLogin(response, { ...credentials, name: response.name })
         }
     },
+    async webAuthnLogin() {
+        const email = document.getElementById("login_email").value
+        const options = await API.webAuthn.loginOptions(email)
+        const loginRes = await SimpleWebAuthnBrowser.startAuthentication(
+            options
+        )
+        const verificationRes = await API.webAuthn.loginVerification(
+            email,
+            loginRes
+        )
+
+        if (verificationRes.ok) {
+            Auth.postLogin(verificationRes, verificationRes.user)
+        } else {
+            alert(verificationRes.message)
+        }
+    },
     logout() {
         Auth.isLoggedIn = false
         Auth.account = null
@@ -93,7 +123,6 @@ const Auth = {
                 password: true,
             })
             // this won't work without https as of April 2023, so this always null
-            console.log(credentials)
         }
     },
     updateStatus() {
