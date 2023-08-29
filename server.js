@@ -77,6 +77,7 @@ app.post("/auth/login", (req, res) => {
 })
 
 // WEBAUTHN ENDPOINTS: 4 endpoints -  2 for registration, 2 for login
+// 1st endpoint for webauthn
 app.post("/auth/webauth-registration-options", (req, res) => {
     const user = findUser(req.body.email)
 
@@ -85,7 +86,7 @@ app.post("/auth/webauth-registration-options", (req, res) => {
         rpID,
         userID: user.email,
         userName: user.name,
-        timeout: 60000,
+        timeout: 60000, // deprecated in ver.7
         attestationType: "none",
 
         /**
@@ -102,12 +103,14 @@ app.post("/auth/webauth-registration-options", (req, res) => {
               }))
             : [],
 
+        // deprecated in ver.7
         authenticatorSelection: {
             userVerification: "required",
             residentKey: "required",
         },
         /**
          * The two most common algorithms: ES256, and RS256
+         * deprecated in ver.7
          */
         supportedAlgorithmIDs: [-7, -257],
     }
@@ -123,6 +126,7 @@ app.post("/auth/webauth-registration-options", (req, res) => {
     res.send(regOptions)
 })
 
+// 2rd endpoint for webauthn
 app.post("/auth/webauth-registration-verification", async (req, res) => {
     const user = findUser(req.body.user.email)
     const data = req.body.data
@@ -136,7 +140,7 @@ app.post("/auth/webauth-registration-verification", async (req, res) => {
             expectedChallenge,
             expectedOrigin,
             expectedRPID: rpID,
-            requireUserVerification: true,
+            requireUserVerification: true, // deprecated in ver.7?
         }
         verification = await SimpleWebAuthnServer.verifyRegistrationResponse(
             options
@@ -152,9 +156,12 @@ app.post("/auth/webauth-registration-verification", async (req, res) => {
         const { credentialPublicKey, credentialID, counter } = registrationInfo
 
         const existingDevice = user.devices
-            ? user.devices.find(device =>
-                  new Buffer.from(device.credentialID.data).equals(credentialID)
-              )
+            ? user.devices.find(device => {
+                  const result = new Buffer.from(
+                      device.credentialID.data
+                  ).equals(credentialID)
+                  return result
+              })
             : false
 
         if (!existingDevice) {
@@ -169,13 +176,14 @@ app.post("/auth/webauth-registration-verification", async (req, res) => {
             }
             user.webauthn = true
             user.devices.push(newDevice)
-            db.write()
+            db.write() // here, we save devices (only and the last thing) here
         }
     }
 
     res.send({ ok: true })
 })
 
+// 3rd endpoint for webauthn
 app.post("/auth/webauth-login-options", (req, res) => {
     const user = findUser(req.body.email)
     const options = {
@@ -194,10 +202,12 @@ app.post("/auth/webauth-login-options", (req, res) => {
     }
     const loginOpts =
         SimpleWebAuthnServer.generateAuthenticationOptions(options)
-    if (user) user.currentChallenge = loginOpts.challenge
+    if (user) user.currentChallenge = loginOpts.challenge // saveしてなくね？でも動いてるし、なんで？//it's because saving to memory, not file system at this point
+
     res.send(loginOpts)
 })
 
+// 4th endpoint for webauthn
 app.post("/auth/webauth-login-verification", async (req, res) => {
     const data = req.body.data
     const user = findUser(req.body.email)
@@ -230,13 +240,13 @@ app.post("/auth/webauth-login-verification", async (req, res) => {
     let verification
     try {
         const options = {
-            credential: data,
-            expectedChallenge: `${expectedChallenge}`,
+            credential: data, // deprecated in ver.7 and replaced with 'response'
+            expectedChallenge: expectedChallenge,
             expectedOrigin,
             expectedRPID: rpID,
             authenticator: {
                 ...dbAuthenticator,
-                credentialPublicKey: new Buffer.from(
+                credentialPublicKey: new Buffer.from( // new Buffer.from is wrong; should be Buffer.from
                     dbAuthenticator.credentialPublicKey.data
                 ), // Re-convert to Buffer from JSON
             },

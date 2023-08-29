@@ -57,8 +57,11 @@ const Auth = {
             Router.go("/register")
         }
     },
+
+    // 2nd
     async addWebAuthn() {
         const options = await API.webAuthn.registrationOptions()
+        // deprecated in ver.7? these 3 lines are not addressed in the docs
         options.authenticatorSelection.residentKey = "required"
         options.authenticatorSelection.requireResidentKey = true
         options.extensions = {
@@ -114,7 +117,11 @@ const Auth = {
         Router.go("/")
 
         if (window.PasswordCredential) {
-            navigator.credentials.preventSilentAccess()
+            try {
+                navigator.credentials.preventSilentAccess()
+            } catch (err) {
+                console.log("navigator: error", err)
+            }
         }
     },
     async autoLogin() {

@@ -25,11 +25,14 @@ const API = {
         return await makePostRequest(endpoint + "auth-options", user)
     },
     webAuthn: {
+        // 3rd endpoint
         async loginOptions(email) {
             return await makePostRequest(endpoint + "webauth-login-options", {
                 email,
             })
         },
+
+        // 4th endpoint
         async loginVerification(email, data) {
             return await makePostRequest(
                 endpoint + "webauth-login-verification",
@@ -39,12 +42,16 @@ const API = {
                 }
             )
         },
+
+        // 1st endpoint
         async registrationOptions() {
             return await makePostRequest(
                 endpoint + "webauth-registration-options",
                 Auth.account
             )
         },
+
+        // 2nd endpoint
         async registrationVerification(data) {
             return await makePostRequest(
                 endpoint + "webauth-registration-verification",
